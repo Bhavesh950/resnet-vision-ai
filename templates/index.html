@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>ResNet Vision AI — Image Classification</title>
+  <meta name="description" content="Upload an image and let a ResNet50 deep learning model tell you what it sees.">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Favicon (place file at static/images/favicon.png) -->
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- App styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body data-has-prediction="{{ 'true' if prediction else 'false' }}">
+
+  <!-- ============ NAVBAR ============ -->
+  <nav class="navbar navbar-expand-lg glass-nav fixed-top" id="mainNav">
+    <div class="container">
+      <a class="navbar-brand brand" href="#home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="30" height="30">
+            <circle cx="6" cy="24" r="3.4" fill="currentColor"/>
+            <circle cx="26" cy="24" r="3.4" fill="currentColor"/>
+            <circle cx="16" cy="8" r="3.4" fill="currentColor" opacity="0.55"/>
+            <path d="M6 24 L26 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M6 24 Q16 -2 26 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" class="skip-arc"/>
+          </svg>
+        </span>
+        <span class="brand-text">ResNet <strong>Vision AI</strong></span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent" aria-controls="navContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navContent">
+        <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+          <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="#about-model">About Model</a></li>
+          <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+          <li class="nav-item ms-lg-2">
+            <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark and light mode">
+              <span class="toggle-track">
+                <span class="toggle-thumb">
+                  <i class="bi bi-sun-fill icon-sun"></i>
+                  <i class="bi bi-moon-stars-fill icon-moon"></i>
+                </span>
+              </span>
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ============ HERO ============ -->
+  <header class="hero" id="home">
+    <div class="hero-glow hero-glow-1" aria-hidden="true"></div>
+    <div class="hero-glow hero-glow-2" aria-hidden="true"></div>
+
+    <div class="container">
+      <div class="row align-items-center gy-5">
+        <div class="col-lg-6 reveal">
+          <span class="eyebrow"><i class="bi bi-cpu"></i> Deep Residual Learning</span>
+          <h1 class="hero-title">See what your image<br><span class="text-gradient">really</span> is.</h1>
+          <p class="hero-sub">ResNet Vision AI reads the residual signal beneath every pixel — a deep convolutional
+            network that names what it sees in milliseconds, the same way Google Lens does, minus the guesswork.</p>
+          <div class="hero-actions">
+            <a href="#predict" class="btn btn-primary-grad">
+              <i class="bi bi-magic"></i> Try it now
+            </a>
+            <a href="#about-model" class="btn btn-ghost">
+              How it works
+            </a>
+          </div>
+          <div class="hero-meta">
+            <div class="hero-meta-item"><strong>50</strong><span>Layers deep</span></div>
+            <div class="hero-meta-divider"></div>
+            <div class="hero-meta-item"><strong>&lt;1s</strong><span>Inference time</span></div>
+            <div class="hero-meta-divider"></div>
+            <div class="hero-meta-item"><strong>1000+</strong><span>Object classes</span></div>
+          </div>
+        </div>
+
+        <div class="col-lg-6 reveal">
+          <div class="hero-visual glass-panel">
+            <svg viewBox="0 0 460 360" class="network-svg" aria-hidden="true">
+              <!-- layer columns -->
+              <g class="net-edges">
+                <line x1="70" y1="70" x2="200" y2="60"></line>
+                <line x1="70" y1="150" x2="200" y2="60"></line>
+                <line x1="70" y1="150" x2="200" y2="150"></line>
+                <line x1="70" y1="230" x2="200" y2="150"></line>
+                <line x1="70" y1="230" x2="200" y2="240"></line>
+                <line x1="70" y1="300" x2="200" y2="240"></line>
+
+                <line x1="200" y1="60" x2="330" y2="100"></line>
+                <line x1="200" y1="150" x2="330" y2="100"></line>
+                <line x1="200" y1="150" x2="330" y2="210"></line>
+                <line x1="200" y1="240" x2="330" y2="210"></line>
+              </g>
+              <path class="skip-path" d="M70 70 C 160 -20, 280 -10, 330 100" />
+              <path class="skip-path skip-path-2" d="M70 230 C 170 340, 290 330, 330 210" />
+              <circle class="pulse-dot" r="4">
+                <animateMotion dur="3.2s" repeatCount="indefinite" path="M70 70 C 160 -20, 280 -10, 330 100" />
+              </circle>
+              <g class="net-nodes">
+                <circle cx="70" cy="70" r="7"></circle>
+                <circle cx="70" cy="150" r="7"></circle>
+                <circle cx="70" cy="230" r="7"></circle>
+                <circle cx="70" cy="300" r="7"></circle>
+                <circle cx="200" cy="60" r="7"></circle>
+                <circle cx="200" cy="150" r="7"></circle>
+                <circle cx="200" cy="240" r="7"></circle>
+                <circle cx="330" cy="100" r="8" class="node-accent"></circle>
+                <circle cx="330" cy="210" r="8" class="node-accent"></circle>
+              </g>
+            </svg>
+            <div class="hero-visual-tag">
+              <i class="bi bi-stars"></i> Residual Block, visualized
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ PREDICT SECTION ============ -->
+  <main>
+    <section class="section predict-section" id="predict">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="eyebrow"><i class="bi bi-lightning-charge-fill"></i> Try It</span>
+          <h2>Upload an image. Skip the guesswork.</h2>
+          <p>Drop a photo below and let the model classify it in real time.</p>
+        </div>
+
+        <div class="console-panel glass-panel reveal">
+          <svg class="connector-svg d-none d-lg-block" viewBox="0 0 100 300" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 60 C 60 60, 40 150, 100 150" />
+          </svg>
+
+          <form action="/predict" method="POST" enctype="multipart/form-data" id="predictForm" class="console-col upload-col">
+            <h3 class="console-col-title"><i class="bi bi-cloud-arrow-up"></i> Upload Image</h3>
+
+            <label for="imageInput" class="upload-zone" id="dropzone">
+              <input type="file" name="image" id="imageInput" accept="image/*" hidden>
+
+              <div class="upload-zone-inner {% if uploaded_image %}d-none{% endif %}" id="uploadPrompt">
+                <span class="upload-icon"><i class="bi bi-images"></i></span>
+                <p class="upload-text">Drag &amp; drop your image here</p>
+                <p class="upload-subtext">or click to browse</p>
+                <span class="upload-formats">PNG · JPG · WEBP — up to 10MB</span>
+              </div>
+
+              <div class="image-preview {% if not uploaded_image %}d-none{% endif %}" id="imagePreviewWrap">
+                <img id="imagePreview" src="{% if uploaded_image %}{{ uploaded_image }}{% endif %}" alt="Selected image preview">
+                <button type="button" class="remove-image" id="removeImage" aria-label="Remove image">
+                  <i class="bi bi-x-lg"></i>
+                </button>
+              </div>
+            </label>
+
+            <div id="cameraContainer" class="d-none mt-3">
+                <video id="video" 
+                    autoplay width="100%">
+                </video>
+                <button type="button" id="captureBtn" class="btn btn-primary mt-2">
+                    Capture
+                </button>
+            </div>
+
+            <div class="upload-actions">
+              <label for="imageInput" class="btn btn-upload">
+                <i class="bi bi-upload"></i> Upload Image
+              </label>
+              <button type="button" class="btn btn-upload" id="openCamera">
+                📷 Camera
+              </button>
+              <button type="submit" class="btn btn-predict" id="predictBtn" {% if not uploaded_image %}disabled{% endif %}>
+                <i class="bi bi-stars"></i> Predict
+              </button>
+            </div>
+            <p class="upload-hint" id="fileNameHint">{% if uploaded_image %}Image ready for prediction{% endif %}</p>
+          </form>
+
+          <div class="console-col result-col">
+            <h3 class="console-col-title"><i class="bi bi-clipboard-data"></i> Prediction Result</h3>
+
+            {% if prediction %}
+            <div class="result-card" data-state="result">
+              <div class="result-header">
+                <span class="status-badge {{ 'badge-success' if confidence >= 75 else 'badge-warning' }}">
+                  <i class="bi bi-check-circle-fill"></i>
+                  {{ 'High Confidence' if confidence >= 75 else 'Needs Review' }}
+                </span>
+                <span class="model-tag"><i class="bi bi-cpu"></i> {{ model_name|default('ResNet50') }}</span>
+              </div>
+
+              <div class="predicted-class">
+                <span class="field-label">Predicted Class</span>
+                <h3 class="predicted-name">{{ prediction }}</h3>
+              </div>
+
+              <div class="confidence-block">
+                <div class="confidence-ring" id="confidenceRing" data-confidence="{{ confidence }}">
+                  <svg viewBox="0 0 120 120">
+                    <circle class="ring-bg" cx="60" cy="60" r="52"></circle>
+                    <circle class="ring-fill" id="ringFill" cx="60" cy="60" r="52"></circle>
+                  </svg>
+                  <div class="ring-label"><span id="confidenceValue">0</span><small>%</small></div>
+                </div>
+
+                <div class="confidence-bar-wrap">
+                  <div class="confidence-bar-label">
+                    <span>Confidence Score</span>
+                    <span class="mono">{{ confidence }}%</span>
+                  </div>
+                  <div class="progress confidence-progress">
+                    <div class="progress-bar" id="confidenceProgressBar" role="progressbar"
+                         style="width:0%" data-target="{{ confidence }}"
+                         aria-valuenow="{{ confidence }}" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                </div>
+              </div>
+
+              <p class="result-description">{{ description }}</p>
+            </div>
+            <hr>
+            <h5 class="mt-3">Top 5 Predictions</h5>
+            {% for item in top_predictions %}
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    
+                    <span>{{ item.name }}</span>
+                    <span>{{ item.score }}%</span>
+                </div>
+                
+                <div class="progress">
+                    <div class="progress-bar"
+                         style="width: {{ item.score }}%">
+                    </div>
+                </div>
+            </div>
+            
+            {% endfor %}
+            {% else %}
+            <div class="result-card result-placeholder" data-state="empty">
+              <span class="placeholder-icon"><i class="bi bi-search"></i></span>
+              <p class="placeholder-title">No prediction yet</p>
+              <p class="placeholder-text">Upload an image and tap <strong>Predict</strong> — your result will land right here.</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if prediction %}
+        <div class="result-display reveal" id="resultDisplay">
+          <div class="result-display-card">
+            <span class="result-display-label">Uploaded Image</span>
+            <div class="result-display-frame">
+              <img src="{{ uploaded_image }}" alt="Uploaded image">
+            </div>
+          </div>
+          <div class="result-display-card">
+            <span class="result-display-label">Predicted Image</span>
+            <div class="result-display-frame">
+              <img src="{{ uploaded_image }}" alt="Predicted image with classification label">
+              <span class="prediction-chip">
+                <i class="bi bi-stars"></i> {{ prediction }} · {{ confidence }}%
+              </span>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+    <!-- ============ FEATURES ============ -->
+    <section class="section features-section" id="features">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="eyebrow"><i class="bi bi-grid-1x2-fill"></i> Why ResNet Vision AI</span>
+          <h2>Built on a model that actually understands depth.</h2>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-md-6 col-lg-3 reveal">
+            <div class="feature-card">
+              <span class="feature-icon"><i class="bi bi-cpu"></i></span>
+              <h3>Deep Learning Powered</h3>
+              <p>Every prediction runs through a trained convolutional neural network — not a static lookup table.</p>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3 reveal">
+            <div class="feature-card">
+              <span class="feature-icon"><i class="bi bi-diagram-3"></i></span>
+              <h3>ResNet50 Architecture</h3>
+              <p>50 layers deep, held together by residual shortcuts that let gradients skip ahead cleanly.</p>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3 reveal">
+            <div class="feature-card">
+              <span class="feature-icon"><i class="bi bi-lightning-charge"></i></span>
+              <h3>Fast Prediction</h3>
+              <p>Inference returns in well under a second for a single image, right from your browser.</p>
+            </div>
+          </div>
+          <div class="col-md-6 col-lg-3 reveal">
+            <div class="feature-card">
+              <span class="feature-icon"><i class="bi bi-bullseye"></i></span>
+              <h3>High Accuracy</h3>
+              <p>Trained on large-scale image data and tuned to give confident, dependable answers.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ABOUT RESNET ============ -->
+    <section class="section about-section" id="about-model">
+      <div class="container">
+        <div class="section-heading reveal">
+          <span class="eyebrow"><i class="bi bi-book"></i> About the Model</span>
+          <h2>A short, honest explanation of ResNet.</h2>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-lg-4 reveal">
+            <div class="about-card">
+              <span class="about-card-icon"><i class="bi bi-question-circle"></i></span>
+              <h3>What is ResNet?</h3>
+              <p>ResNet, short for Residual Network, is a deep convolutional architecture introduced to make
+                very deep neural networks trainable. Instead of stacking layers blindly, it organizes them
+                into residual blocks connected by shortcuts, allowing the network to grow to 50, 101, or even
+                152 layers without losing the ability to learn.</p>
+            </div>
+          </div>
+          <div class="col-lg-4 reveal">
+            <div class="about-card">
+              <span class="about-card-icon"><i class="bi bi-arrow-repeat"></i></span>
+              <h3>Why Residual Connections?</h3>
+              <p>Each block learns a residual — the difference between its input and the desired output — and
+                adds it back through a skip connection. This keeps gradients flowing during training, prevents
+                accuracy from degrading as depth increases, and makes optimization far more stable.</p>
+            </div>
+          </div>
+          <div class="col-lg-4 reveal">
+            <div class="about-card">
+              <span class="about-card-icon"><i class="bi bi-image"></i></span>
+              <h3>Why Used for Classification?</h3>
+              <p>Depth lets a network build hierarchical features — edges, then textures, then whole objects.
+                ResNet reaches that depth without breaking down, which is why it became a standard backbone
+                for image classification and a foundation for countless vision systems since.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT ============ -->
+    <section class="section contact-section" id="contact">
+      <div class="container">
+        <div class="contact-panel glass-panel reveal">
+          <div class="row align-items-center g-4">
+            <div class="col-lg-7">
+              <span class="eyebrow"><i class="bi bi-chat-dots"></i> Get in Touch</span>
+              <h2>Questions about the model or the build?</h2>
+              <p>Reach out and we'll get back to you — feedback, collaboration ideas, and bug reports are all welcome.</p>
+            </div>
+            <div class="col-lg-5 text-lg-end">
+              <a href="mailto:hello@resnetvision.ai" class="btn btn-primary-grad">
+                <i class="bi bi-envelope"></i> bhaveshmulchandani651@gmail.com
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="26" height="26">
+              <circle cx="6" cy="24" r="3.4" fill="currentColor"/>
+              <circle cx="26" cy="24" r="3.4" fill="currentColor"/>
+              <circle cx="16" cy="8" r="3.4" fill="currentColor" opacity="0.55"/>
+              <path d="M6 24 L26 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M6 24 Q16 -2 26 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </svg>
+          </span>
+          <span>ResNet Vision AI</span>
+        </div>
+        <div class="footer-developer">
+          <p>Designed &amp; built by <strong>{{ developer_name|default('Bhavesh Mulchandani') }}</strong></p>
+          <div class="footer-socials">
+            <a href="{{ github_url|default('https://github.com/') }}" target="_blank" rel="noopener" aria-label="GitHub profile">
+              <i class="bi bi-github"></i>
+            </a>
+            <a href="{{ linkedin_url|default('https://linkedin.com/') }}" target="_blank" rel="noopener" aria-label="LinkedIn profile">
+              <i class="bi bi-linkedin"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      <hr class="footer-divider">
+      <div class="footer-bottom">
+        <span>© <span id="footerYear">2026</span> ResNet Vision AI. All rights reserved.</span>
+        <span class="footer-tag">Image Classification, not Detection.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
